@@ -1,236 +1,211 @@
-# 🏦 Banking Application REST API
+# Banking Application REST API
 
-A comprehensive and secure Banking Application REST API built with Spring Boot 3.4.3, providing complete banking operations including user management, account handling, transactions, and net banking capabilities.
+A secure backend banking system built with Spring Boot and PostgreSQL. It supports user registration and login, account management, deposits, withdrawals, money transfers, and a full passbook of transaction history. Every protected endpoint uses JWT authentication with role-based access control.
 
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.java.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue.svg)](https://www.postgresql.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [API Endpoints](#api-endpoints)
 - [Testing with Postman](#testing-with-postman)
-- [Project Structure](#project-structure)
 - [Security](#security)
-- [Contributing](#contributing)
+- [Project Structure](#project-structure)
+- [Limitations](#limitations)
+- [Roadmap](#roadmap)
 - [License](#license)
 - [Contact](#contact)
 
-## ✨ Features
+## Features
 
-### 🔐 Authentication & Authorization
-- **JWT-based Authentication** - Secure token-based authentication system
-- **Spring Security Integration** - Role-based access control
-- **Custom User Details Service** - Personalized user authentication
+**Authentication and authorization**
+- JWT-based stateless authentication with token expiry
+- Role-based access control using Spring Security
+- Custom user details service
+- BCrypt password hashing
 
-### 👤 User Management
+**User management**
 - User registration and login
-- Secure password encryption
 - User profile management
-- Admin user search functionality
+- Admin user search and onboarding
 
-### 💳 Account Management
-- Create and manage bank accounts
-- Link users to accounts
-- View account details
-- Account balance tracking
+**Account management**
+- Create bank accounts and link them to users
+- View account details and balances
 
-### 💰 Transaction Operations
-- **Deposit** - Add money to accounts
-- **Withdrawal** - Withdraw money from accounts
-- **Net Banking** - Transfer money between accounts
-- **Balance Inquiry** - Check current account balance
-- Real-time transaction processing
+**Transactions**
+- Deposit and withdrawal
+- Net banking transfers between accounts
+- Balance inquiry
 
-### 📖 Passbook Management
-- View transaction history
-- Complete passbook details
-- Account-wise transaction records
-- Sender and receiver details tracking
+**Passbook**
+- Full transaction history per account
+- Sender and receiver details for each transfer
 
-### 🛡️ Security Features
-- JWT token validation
-- Custom exception handling
-- Data validation
-- SQL injection prevention
-- Secure API endpoints
+**Reliability**
+- Bean validation on request inputs
+- Global exception handling with consistent error responses
+- Parameterized queries through JPA/Hibernate
 
-### 📊 Admin Features
-- Search and manage users
-- User registration
-- System-wide user overview
+## Tech Stack
 
-## 🛠️ Tech Stack
+| Layer | Technology |
+|---|---|
+| Language | Java 17 |
+| Framework | Spring Boot 3.4.3, Spring Data JPA, Spring Validation |
+| Security | Spring Security, JWT (io.jsonwebtoken 0.12.5), BCrypt |
+| Database | PostgreSQL |
+| Mapping and utilities | MapStruct 1.5.5, Lombok, Apache Commons Text and Collections |
+| Build | Maven (wrapper included) |
+| API testing | Postman |
 
-**Backend:**
-- Java 17
-- Spring Boot 3.4.3
-- Spring Data JPA
-- Spring Security
-- Spring Validation
+## Architecture
 
-**Database:**
-- PostgreSQL
+The application follows a layered design:
 
-**Security:**
-- JWT (JSON Web Tokens) - io.jsonwebtoken 0.12.5
-- BCrypt Password Encoder
+```
+Client -> JwtFilter -> Controller -> Service -> Repository -> PostgreSQL
+                          |
+                  Mapper (entity <-> DTO)
+                          |
+              GlobalExceptionHandler (errors)
+```
 
-**Tools & Libraries:**
-- Lombok - Reduce boilerplate code
-- MapStruct 1.5.5 - Object mapping
-- Apache Commons Text 1.10.0
-- Apache Commons Collections 4.4
-- Maven - Dependency management
+- **Controllers** expose the REST endpoints and accept DTOs.
+- **Services** hold the business logic (balance checks, transfers, passbook entries).
+- **Repositories** handle persistence through Spring Data JPA.
+- **Mappers** convert between entities and DTOs using MapStruct.
+- **JwtFilter** validates the token on every protected request.
 
-**Testing:**
-- Tested extensively with **Postman**
-- All endpoints verified and working
+## Getting Started
 
-## 📦 Prerequisites
+### Prerequisites
 
-Before running this application, make sure you have:
+- JDK 17 or higher
+- PostgreSQL 12 or higher
+- Maven 3.6+ (or the included Maven wrapper)
+- Postman (for API testing)
 
-- **Java Development Kit (JDK) 17** or higher
-- **PostgreSQL 12** or higher
-- **Maven 3.6+** (or use included Maven wrapper)
-- **Postman** (for API testing)
-- **Git** (for version control)
-
-## 🚀 Installation
-
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Krishal-Modi/Banking-Application-Rest-API.git
 cd Banking-Application-Rest-API/BankingApplication
 ```
 
-### 2. Configure Database
-
-Create a PostgreSQL database:
+### 2. Create the database
 
 ```sql
 CREATE DATABASE BankingApplication;
 ```
 
-Update the database credentials in `src/main/resources/application.properties`:
+### 3. Set environment variables
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/BankingApplication
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-```
-
-### 3. Build the Project
-
-Using Maven wrapper (recommended):
+Do not commit real credentials. Set them in your environment instead:
 
 ```bash
+# Linux / macOS
+export DB_URL=jdbc:postgresql://localhost:5432/BankingApplication
+export DB_USERNAME=your_username
+export DB_PASSWORD=your_password
+export JWT_SECRET=a_long_random_secret_at_least_32_characters
+
+# Windows (PowerShell)
+$env:DB_URL="jdbc:postgresql://localhost:5432/BankingApplication"
+$env:DB_USERNAME="your_username"
+$env:DB_PASSWORD="your_password"
+$env:JWT_SECRET="a_long_random_secret_at_least_32_characters"
+```
+
+### 4. Build and run
+
+```bash
+# Linux / macOS
+./mvnw clean install
+./mvnw spring-boot:run
+
 # Windows
 mvnw.cmd clean install
-
-# Linux/Mac
-./mvnw clean install
-```
-
-Or using Maven:
-
-```bash
-mvn clean install
-```
-
-### 4. Run the Application
-
-```bash
-# Windows
 mvnw.cmd spring-boot:run
-
-# Linux/Mac
-./mvnw spring-boot:run
 ```
 
-The application will start on `http://localhost:8086`
+The API starts on `http://localhost:8086`.
 
-## ⚙️ Configuration
+## Configuration
 
-### Application Properties
-
-Key configurations in `application.properties`:
+`src/main/resources/application.properties` reads sensitive values from environment variables:
 
 ```properties
-# Server Port
 server.port=8086
 
-# Database Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/BankingApplication
-spring.datasource.username=postgres
-spring.datasource.password=root
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 
-# JPA Configuration
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+spring.jpa.show-sql=false
+
+jwt.secret=${JWT_SECRET}
 ```
 
-### JWT Configuration
+`ddl-auto=update` is convenient for development. Use migrations (for example Flyway) before deploying anywhere real.
 
-JWT secret key and expiration can be configured in `JwtUtil.java`
+## API Endpoints
 
-## 📡 API Endpoints
+All endpoints except login require the header `Authorization: Bearer <jwt_token>`.
 
-### Authentication Endpoints
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| POST | `/user/login` | Log in and receive a JWT | Public |
+| POST | `/admin/signUp` | Register a new user | Admin |
+| GET | `/admin/search?search=john` | Search users | Admin |
+| POST | `/userAccount/addingAccount` | Create a bank account | Authenticated |
+| GET | `/userAccount/passbook` | View transaction history | Authenticated |
+| PUT | `/userAccount/netBanking` | Transfer money between accounts | Authenticated |
+| PUT | `/transaction/deposit` | Deposit money | Authenticated |
+| PUT | `/transaction/withdrawal` | Withdraw money | Authenticated |
+| GET | `/transaction/currentBalance/{accountNumber}` | Check balance | Authenticated |
 
-#### User Login
+### Examples
+
+**Login**
 ```http
 POST /user/login
 Content-Type: application/json
 
 {
   "email": "user@example.com",
-  "password": "password123"
+  "password": "your_password"
 }
 ```
+Response: a JWT token.
 
-**Response:** JWT Token
-
----
-
-### Admin Endpoints
-
-#### Register New User
+**Register a user (admin)**
 ```http
 POST /admin/signUp
+Authorization: Bearer <jwt_token>
 Content-Type: application/json
 
 {
   "name": "John Doe",
   "email": "john@example.com",
-  "password": "secure_password",
+  "password": "your_password",
   "phoneNumber": "1234567890",
   "roles": "USER"
 }
 ```
 
-#### Search Users
-```http
-GET /admin/search?search=john
-Authorization: Bearer {jwt_token}
-```
-
----
-
-### Account Endpoints
-
-#### Create Account
+**Create an account**
 ```http
 POST /userAccount/addingAccount
-Authorization: Bearer {jwt_token}
+Authorization: Bearer <jwt_token>
 Content-Type: application/json
 
 {
@@ -240,31 +215,19 @@ Content-Type: application/json
 }
 ```
 
-#### View Passbook
-```http
-GET /userAccount/passbook
-Authorization: Bearer {jwt_token}
-```
-
-#### Net Banking (Money Transfer)
+**Transfer money**
 ```http
 PUT /userAccount/netBanking
-Authorization: Bearer {jwt_token}
+Authorization: Bearer <jwt_token>
 Content-Type: application/x-www-form-urlencoded
 
-senderAccountNumber=1234567890
-receiverAccountNumber=0987654321
-amount=500
+senderAccountNumber=1234567890&receiverAccountNumber=0987654321&amount=500
 ```
 
----
-
-### Transaction Endpoints
-
-#### Deposit Money
+**Deposit**
 ```http
 PUT /transaction/deposit
-Authorization: Bearer {jwt_token}
+Authorization: Bearer <jwt_token>
 Content-Type: application/json
 
 {
@@ -273,10 +236,10 @@ Content-Type: application/json
 }
 ```
 
-#### Withdraw Money
+**Withdraw**
 ```http
 PUT /transaction/withdrawal
-Authorization: Bearer {jwt_token}
+Authorization: Bearer <jwt_token>
 Content-Type: application/json
 
 {
@@ -285,232 +248,83 @@ Content-Type: application/json
 }
 ```
 
-#### Check Balance
-```http
-GET /transaction/currentBalance/{accountNumber}
-Authorization: Bearer {jwt_token}
-```
+## Testing with Postman
 
----
+All endpoints were tested manually with Postman.
 
-## 🧪 Testing with Postman
-
-This API has been **thoroughly tested with Postman** to ensure all endpoints work correctly.
-
-### Getting Started with Postman
-
-1. **Download Postman** from [postman.com](https://www.postman.com/downloads/)
-
-2. **Import Collection** (Optional - Create your own)
-   - Create a new collection called "Banking API"
-   - Add all endpoints mentioned above
-
-3. **Setup Environment Variables**
-   - Create variables:
-     - `base_url`: `http://localhost:8086`
-     - `jwt_token`: (Will be set after login)
-
-4. **Testing Flow**
-
-   **Step 1: Register a User**
+1. Create environment variables: `base_url` = `http://localhost:8086` and `jwt_token`.
+2. Log in with `POST {{base_url}}/user/login`.
+3. Save the returned token with this script in the **Tests** tab:
+   ```javascript
+   pm.test("Status code is 200", function () {
+       pm.response.to.have.status(200);
+   });
+   pm.environment.set("jwt_token", pm.response.text());
    ```
-   POST {{base_url}}/admin/signUp
-   ```
-   
-   **Step 2: Login**
-   ```
-   POST {{base_url}}/user/login
-   ```
-   Copy the JWT token from response
-   
-   **Step 3: Set Authorization**
-   - Add header: `Authorization: Bearer {your_jwt_token}`
-   
-   **Step 4: Create Account**
-   ```
-   POST {{base_url}}/userAccount/addingAccount
-   ```
-   
-   **Step 5: Test Transactions**
-   - Deposit money
-   - Withdraw money
-   - Check balance
-   - Transfer money (net banking)
-   
-   **Step 6: View Passbook**
-   ```
-   GET {{base_url}}/userAccount/passbook
-   ```
+4. Set the `Authorization` header to `Bearer {{jwt_token}}` on other requests.
+5. Run the flow: register user, create account, deposit, withdraw, transfer, check balance, view passbook.
 
-### Postman Testing Tips
+A ready-to-import collection is in `postman/Banking-API.postman_collection.json`.
 
-- **Use Environment Variables** for base URL and tokens
-- **Enable Auto-Refresh Tokens** if tokens expire
-- **Save Example Responses** for documentation
-- **Use Tests Tab** to add assertions
-- **Create Collection Runner** for automated testing
+## Security
 
-### Common Postman Test Scripts
+**Authentication flow**
+1. The client sends credentials to `/user/login`.
+2. The server validates them and returns a signed JWT.
+3. The client sends the token in the `Authorization` header.
+4. `JwtFilter` validates the token on every protected request.
 
-```javascript
-// Save JWT token automatically after login
-pm.test("Status code is 200", function () {
-    pm.response.to.have.status(200);
-});
+**Measures in place**
+- BCrypt password hashing
+- Stateless JWT authentication with expiry
+- Role-based access control on admin endpoints
+- Bean validation on request inputs
+- Parameterized queries through JPA/Hibernate (protects against SQL injection)
+- Global exception handling that returns consistent errors without leaking internals
+- Secrets read from environment variables, not committed to the repository
 
-var jsonData = pm.response.text();
-pm.environment.set("jwt_token", jsonData);
-```
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 BankingApplication/
-├── src/
-│   ├── main/
-│   │   ├── java/com/example/BankingApplication/
-│   │   │   ├── BankingApplication.java          # Main application class
-│   │   │   ├── config/
-│   │   │   │   └── SpringSecurity.java          # Security configuration
-│   │   │   ├── controller/                      # REST controllers
-│   │   │   │   ├── AccountController.java
-│   │   │   │   ├── AdminController.java
-│   │   │   │   ├── TransactionalController.java
-│   │   │   │   └── UserController.java
-│   │   │   ├── entity/                          # JPA entities
-│   │   │   │   ├── Account.java
-│   │   │   │   ├── Passbook.java
-│   │   │   │   └── User.java
-│   │   │   ├── exceptions/                      # Custom exceptions
-│   │   │   │   ├── DataNotFoundException.java
-│   │   │   │   ├── DataValidationException.java
-│   │   │   │   └── handler/
-│   │   │   │       └── GlobalExceptionHandler.java
-│   │   │   ├── filter/                          # Security filters
-│   │   │   │   └── JwtFilter.java
-│   │   │   ├── mapper/                          # MapStruct mappers
-│   │   │   │   ├── AccountMapper.java
-│   │   │   │   ├── PassbookMapper.java
-│   │   │   │   └── UserMapper.java
-│   │   │   ├── model/                           # DTOs
-│   │   │   │   ├── AccountModel.java
-│   │   │   │   ├── LoanModel.java
-│   │   │   │   ├── NetBankingModel.java
-│   │   │   │   ├── PassbookAccountModel.java
-│   │   │   │   ├── PassbookModel.java
-│   │   │   │   ├── ReceiverModel.java
-│   │   │   │   ├── SenderModel.java
-│   │   │   │   ├── TransactionalModel.java
-│   │   │   │   ├── UserAccountModel.java
-│   │   │   │   ├── UserModel.java
-│   │   │   │   ├── UserPassbookModel.java
-│   │   │   │   └── error/
-│   │   │   │       ├── ErrorResponse.java
-│   │   │   │       └── ErrorType.java
-│   │   │   ├── repository/                      # JPA repositories
-│   │   │   │   ├── AccountRepository.java
-│   │   │   │   ├── PassbookRepository.java
-│   │   │   │   └── UserRepository.java
-│   │   │   ├── service/                         # Business logic
-│   │   │   │   ├── AccountService.java
-│   │   │   │   ├── AdminService.java
-│   │   │   │   ├── CustomUserDetailsService.java
-│   │   │   │   ├── TransactionalService.java
-│   │   │   │   └── UserService.java
-│   │   │   └── utils/                           # Utility classes
-│   │   │       └── JwtUtil.java
-│   │   └── resources/
-│   │       └── application.properties           # Application configuration
-│   └── test/                                    # Test files
-├── mvnw                                         # Maven wrapper (Unix)
-├── mvnw.cmd                                     # Maven wrapper (Windows)
-└── pom.xml                                      # Maven dependencies
+├── src/main/java/com/example/BankingApplication/
+│   ├── BankingApplication.java
+│   ├── config/         SpringSecurity.java
+│   ├── controller/     Account, Admin, Transactional, User controllers
+│   ├── entity/         Account, Passbook, User
+│   ├── exceptions/     DataNotFoundException, DataValidationException, handler/GlobalExceptionHandler
+│   ├── filter/         JwtFilter.java
+│   ├── mapper/         Account, Passbook, User mappers (MapStruct)
+│   ├── model/          DTOs and error response models
+│   ├── repository/     Account, Passbook, User repositories
+│   ├── service/        Account, Admin, CustomUserDetails, Transactional, User services
+│   └── utils/          JwtUtil.java
+├── src/main/resources/application.properties
+├── src/test/
+├── mvnw, mvnw.cmd
+└── pom.xml
 ```
 
-## 🔒 Security
+## Limitations
 
-### Authentication Flow
+- Testing so far is manual (Postman). Automated unit and integration tests are planned.
+- Loan management is not implemented. A loan DTO exists, but no endpoint uses it yet.
+- No rate limiting on the login endpoint.
+- Database schema is managed by Hibernate `ddl-auto`, not versioned migrations.
 
-1. User sends credentials to `/user/login`
-2. Server validates credentials
-3. JWT token is generated and returned
-4. Client includes token in `Authorization` header for subsequent requests
-5. Server validates token using `JwtFilter`
+## Roadmap
 
-### Security Measures
+- [ ] Unit and integration tests for the transfer logic (JUnit, Mockito, Testcontainers)
+- [ ] Swagger/OpenAPI documentation
+- [ ] Docker Compose setup (API and PostgreSQL)
+- [ ] GitHub Actions workflow to build and test on every push
+- [ ] Transaction limits and audit logging
+- [ ] Idempotency keys for transfers
+- [ ] Email notifications for transactions
+- [ ] Two-factor authentication
+- [ ] Loan management
+- [ ] Account statement PDF export
 
-- **Password Encryption**: BCrypt encoding for password storage
-- **JWT Tokens**: Stateless authentication
-- **Request Filtering**: JWT validation on protected endpoints
-- **Custom Exception Handling**: Secure error messages
-- **Input Validation**: Bean validation on all inputs
-- **SQL Injection Prevention**: JPA/Hibernate parameterized queries
+## License
 
-### Best Practices Implemented
-
-✅ Token-based authentication  
-✅ Password hashing  
-✅ Role-based access control  
-✅ Global exception handling  
-✅ Input validation  
-✅ Secure headers  
-✅ Database connection pooling  
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/AmazingFeature
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m 'Add some AmazingFeature'
-   ```
-4. **Push to the branch**
-   ```bash
-   git push origin feature/AmazingFeature
-   ```
-5. **Open a Pull Request**
-
-### Contribution Guidelines
-
-- Follow Java coding conventions
-- Write meaningful commit messages
-- Add comments for complex logic
-- Update documentation if needed
-- Test your changes thoroughly with Postman
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📧 Contact
-
-**Krishal Modi**
-
-- GitHub: [@Krishal-Modi](https://github.com/Krishal-Modi)
-- Project Link: [https://github.com/Krishal-Modi/Banking-Application-Rest-API](https://github.com/Krishal-Modi/Banking-Application-Rest-API)
-
-## 🙏 Acknowledgments
-
-- Spring Boot Documentation
-- PostgreSQL Community
-- JWT.io for JWT implementation guidance
-- Postman for excellent API testing tools
-- Open source community
-
-## 📈 Future Enhancements
-
-- [ ] Add interest calculation for savings accounts
-- [ ] Implement loan management system
-- [ ] Add email notifications for transactions
-- [ ] Create admin dashboard
-- [ ] Implement transaction limits
-- [ ] Add two-factor authentication
-- [ ] Create mobile app integration
-- [ ] Add support for multiple currencies
-- [ ] Implement account statements PDF generation
-- [ ] Add GraphQL support
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
